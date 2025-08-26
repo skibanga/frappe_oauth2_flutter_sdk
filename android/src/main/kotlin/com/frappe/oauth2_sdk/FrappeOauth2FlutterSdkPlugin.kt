@@ -1,4 +1,4 @@
-package com.example.frappe_oauth2_flutter_sdk
+package com.frappe.oauth2_sdk
 
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.plugin.common.MethodCall

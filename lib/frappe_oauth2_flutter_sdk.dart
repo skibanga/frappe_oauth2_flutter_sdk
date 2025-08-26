@@ -1,3 +1,23 @@
+library;
+
+// Core client
+export 'frappe_oauth_client.dart';
+
+// Models
+export 'models/auth_result.dart';
+export 'models/oauth_config.dart';
+export 'models/token_response.dart';
+export 'models/user_info.dart';
+
+// Exceptions
+export 'exceptions/frappe_auth_exception.dart';
+
+// Services (for advanced usage)
+export 'services/network_service.dart';
+
+// Utilities
+export 'utils/url_builder.dart';
+export 'utils/validation_utils.dart';
 
 import 'frappe_oauth2_flutter_sdk_platform_interface.dart';
 
