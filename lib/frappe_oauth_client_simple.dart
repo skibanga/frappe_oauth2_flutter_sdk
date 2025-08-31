@@ -344,8 +344,4 @@ class FrappeOAuthClient {
   }
 }
 
-/// Configuration validation exception
-class FrappeConfigurationException extends FrappeAuthException {
-  FrappeConfigurationException(super.message)
-    : super(code: 'CONFIGURATION_ERROR');
-}
+// FrappeConfigurationException is imported from exceptions/frappe_auth_exception.dart

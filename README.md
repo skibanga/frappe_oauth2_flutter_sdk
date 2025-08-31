@@ -1,16 +1,17 @@
 # Frappe OAuth2 Flutter SDK
 
-A comprehensive Flutter SDK for Frappe OAuth2 authentication with automatic platform configuration and token management.
+A clean, headless Flutter SDK for OAuth2 authentication with Frappe servers. This SDK provides a simplified, developer-friendly API without UI components, allowing you to integrate OAuth2 authentication seamlessly into your Flutter applications.
 
-## Features
+## ✨ Features
 
-- 🔐 **Complete OAuth2 Flow**: Authorization code flow with PKCE support
-- 🔄 **Automatic Token Refresh**: Background token refresh with configurable thresholds
-- 💾 **Multiple Storage Options**: Secure storage, SharedPreferences, and Hive support
-- 🛠️ **Platform Auto-Configuration**: Automatic Android and iOS setup
-- 🌐 **Cross-Platform**: Works on Android, iOS, Web, and Desktop
-- 🔍 **Comprehensive Validation**: Runtime configuration validation with helpful error messages
-- 📱 **flutter_web_auth_2 Integration**: Seamless web authentication across platforms
+- **🔐 Complete OAuth2 Flow** - Authorization code flow with PKCE support
+- **📱 Cross-Platform** - iOS, Android, Web, macOS, Windows, Linux
+- **🎯 Headless Design** - No UI components, you control the interface
+- **💾 Simple Storage** - SharedPreferences-based token storage
+- **🔄 Auto Token Refresh** - Automatic token management
+- **🛡️ Secure** - PKCE implementation, secure token handling
+- **🧪 Well Tested** - 85+ unit tests with comprehensive coverage
+- **📚 Comprehensive Docs** - Detailed guides and API reference
 
 ## Quick Start
 
@@ -28,69 +29,137 @@ dependencies:
 ```dart
 import 'package:frappe_oauth2_flutter_sdk/frappe_oauth2_flutter_sdk.dart';
 
-// Initialize the client
-final frappeAuth = FrappeOAuthClient(
-  config: OAuthConfig(
-    baseUrl: 'https://your-frappe-site.com',
-    clientId: 'your-client-id',
-    redirectScheme: 'myapp',
-  ),
+// 1. Configure
+final config = OAuthConfig(
+  baseUrl: 'https://your-frappe-server.com',
+  clientId: 'your-client-id',
+  redirectScheme: 'yourapp',
+  scopes: ['openid', 'profile', 'email'],
 );
 
-// Login
-final result = await frappeAuth.login();
-if (result.success) {
-  print('Welcome ${result.userInfo!.fullName}');
+// 2. Create client
+final client = await FrappeOAuthClient.create(config: config);
+
+// 3. Login
+final result = await client.login();
+if (result.isSuccess) {
+  print('Logged in as: ${result.userInfo?.email}');
+} else if (result.isCancelled) {
+  print('User cancelled login');
 } else {
-  print('Login failed: ${result.error!.message}');
+  print('Login failed: ${result.error?.message}');
 }
 
-// Check authentication status
-if (await frappeAuth.isAuthenticated()) {
-  final user = await frappeAuth.getCurrentUser();
-  print('Logged in as: ${user?.fullName}');
+// 4. Check authentication
+if (await client.isAuthenticated()) {
+  final token = await client.getAccessToken();
+  // Use token for API calls
 }
 
-// Logout
-await frappeAuth.logout();
+// 5. Logout
+await client.logout();
 ```
 
-## Project Structure
+## 📋 Platform Setup
 
+### Android
+Add to `android/app/src/main/AndroidManifest.xml`:
+```xml
+<activity
+    android:name="com.linusu.flutter_web_auth_2.CallbackActivity"
+    android:exported="true">
+    <intent-filter android:autoVerify="true">
+        <action android:name="android.intent.action.VIEW" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <category android:name="android.intent.category.BROWSABLE" />
+        <data android:scheme="yourapp" />
+    </intent-filter>
+</activity>
 ```
-lib/
-├── models/           # Data models (TokenResponse, UserInfo, etc.)
-├── services/         # Core services
-│   └── storage/      # Storage implementations
-├── utils/            # Utility functions
-├── exceptions/       # Custom exceptions
-└── frappe_oauth_client.dart  # Main client class
+
+### iOS
+Add to `ios/Runner/Info.plist`:
+```xml
+<key>CFBundleURLTypes</key>
+<array>
+    <dict>
+        <key>CFBundleURLName</key>
+        <string>yourapp.auth</string>
+        <key>CFBundleURLSchemes</key>
+        <array>
+            <string>yourapp</string>
+        </array>
+    </dict>
+</array>
 ```
 
-## Development Status
+## 📚 Documentation
 
-✅ **Phase 1 Complete** - Foundation & Core Architecture
+- **[Quick Start Guide](docs/quick_start.md)** - Get up and running in 10 minutes
+- **[API Reference](docs/api_reference.md)** - Complete API documentation
+- **[Platform Setup](docs/platform_setup.md)** - Detailed platform configuration
+- **[Best Practices](docs/best_practices.md)** - Security and architecture patterns
 
-- [x] Project setup and dependencies
-- [x] Core data models (TokenResponse, UserInfo, AuthResult, OAuthConfig)
-- [x] Exception hierarchy (comprehensive error handling)
-- [x] Network service (HTTP client with retry logic)
-- [x] Basic OAuth2 client (complete authorization code flow)
-- [x] URL construction & validation (comprehensive validation utilities)
+## 🧪 Testing
 
-🚧 **Next: Phase 2** - Platform Integration & Storage
+The SDK includes comprehensive unit tests with 85+ test cases:
 
-- [ ] Storage service implementations
-- [ ] flutter_web_auth_2 integration
-- [ ] Token manager with persistence
-- [ ] Manual platform configuration guides
-- [ ] Enhanced example app
+```bash
+# Run all tests
+flutter test
 
-## Contributing
+# Run with coverage
+flutter test --coverage
+```
 
-This project is currently in active development. Contributions will be welcome once the initial implementation is complete.
+## 🔧 API Overview
 
-## License
+### Core Classes
+- **`FrappeOAuthClient`** - Main authentication client
+- **`OAuthConfig`** - Configuration settings
+- **`AuthResult`** - Authentication result wrapper
+- **`UserInfo`** - User profile information
+- **`TokenResponse`** - OAuth2 token data
+
+### Key Methods
+```dart
+// Factory constructor
+static Future<FrappeOAuthClient> create({required OAuthConfig config})
+
+// Authentication
+Future<AuthResult> login()
+Future<void> logout()
+
+// State management
+Future<bool> isAuthenticated()
+Future<UserInfo?> getCurrentUser()
+Future<String?> getAccessToken()
+Future<TokenResponse?> refreshToken()
+```
+
+## 🛡️ Security Features
+
+- **PKCE Implementation** - Proof Key for Code Exchange
+- **Secure Token Storage** - SharedPreferences with validation
+- **Automatic Token Refresh** - Background token management
+- **Deep Link Validation** - Secure callback URL handling
+- **Configuration Validation** - Prevents common setup errors
+
+## 🤝 Contributing
+
+We welcome contributions! Please:
+
+1. Fork the repository
+2. Create a feature branch
+3. Add tests for new functionality
+4. Ensure all tests pass
+5. Submit a pull request
+
+## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+Made with ❤️ for the Frappe community
 

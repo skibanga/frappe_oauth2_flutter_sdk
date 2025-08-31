@@ -73,8 +73,8 @@ class UrlBuilder {
     return _buildUrlWithParams(endpoint, params);
   }
 
-  /// Builds the token endpoint URL
-  static String buildTokenUrl({
+  /// Builds the token endpoint URL (static version)
+  static String buildTokenUrlStatic({
     required String baseUrl,
     String? customEndpoint,
   }) {
@@ -82,8 +82,8 @@ class UrlBuilder {
         '$baseUrl/api/method/frappe.integrations.oauth2.get_token';
   }
 
-  /// Builds the user info endpoint URL
-  static String buildUserInfoUrl({
+  /// Builds the user info endpoint URL (static version)
+  static String buildUserInfoUrlStatic({
     required String baseUrl,
     String? customEndpoint,
   }) {

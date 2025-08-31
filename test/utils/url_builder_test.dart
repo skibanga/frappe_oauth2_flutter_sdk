@@ -1,12 +1,83 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frappe_oauth2_flutter_sdk/utils/url_builder.dart';
+import 'package:frappe_oauth2_flutter_sdk/models/oauth_config.dart';
 import 'package:frappe_oauth2_flutter_sdk/exceptions/frappe_auth_exception.dart';
 
 void main() {
   group('UrlBuilder', () {
-    group('buildAuthorizationUrl', () {
+    late UrlBuilder urlBuilder;
+    late OAuthConfig config;
+
+    setUp(() {
+      config = const OAuthConfig(
+        baseUrl: 'https://test.frappe.cloud',
+        clientId: 'test_client',
+        redirectScheme: 'testapp',
+        scopes: ['openid', 'profile'],
+      );
+      urlBuilder = UrlBuilder(config: config);
+    });
+
+    group('instance methods', () {
+      test('should build authorization URL with config', () {
+        // Act
+        final url = urlBuilder.buildAuthorizationUrl(state: 'test_state');
+
+        // Assert
+        expect(
+          url,
+          contains(
+            'https://test.frappe.cloud/api/method/frappe.integrations.oauth2.authorize',
+          ),
+        );
+        expect(url, contains('client_id=test_client'));
+        expect(url, contains('redirect_uri=testapp%3A%2F%2Foauth2redirect'));
+        expect(url, contains('scope=openid+profile'));
+        expect(url, contains('state=test_state'));
+        expect(url, contains('response_type=code'));
+      });
+
+      test('should generate random state when not provided', () {
+        // Act
+        final url1 = urlBuilder.buildAuthorizationUrl();
+        final url2 = urlBuilder.buildAuthorizationUrl();
+
+        // Assert
+        expect(url1, isNot(equals(url2))); // Different random states
+        expect(url1, contains('state='));
+        expect(url2, contains('state='));
+      });
+
+      test('should build token URL', () {
+        // Act
+        final url = urlBuilder.buildTokenUrl();
+
+        // Assert
+        expect(
+          url,
+          equals(
+            'https://test.frappe.cloud/api/method/frappe.integrations.oauth2.get_token',
+          ),
+        );
+      });
+
+      test('should build user info URL', () {
+        // Act
+        final url = urlBuilder.buildUserInfoUrl();
+
+        // Assert
+        expect(
+          url,
+          equals(
+            'https://test.frappe.cloud/api/method/frappe.integrations.oauth2.openid_profile',
+          ),
+        );
+      });
+    });
+
+    group('static methods - buildAuthorizationUrlStatic', () {
       test('should build valid authorization URL with all parameters', () {
-        final url = UrlBuilder.buildAuthorizationUrl(
+        final url = UrlBuilder.buildAuthorizationUrlStatic(
           baseUrl: 'https://test.frappe.cloud',
           clientId: 'test_client',
           redirectUri: 'myapp://oauth2redirect',
@@ -35,7 +106,7 @@ void main() {
       });
 
       test('should use custom endpoint when provided', () {
-        final url = UrlBuilder.buildAuthorizationUrl(
+        final url = UrlBuilder.buildAuthorizationUrlStatic(
           baseUrl: 'https://test.frappe.cloud',
           clientId: 'test_client',
           redirectUri: 'myapp://oauth2redirect',
@@ -50,7 +121,7 @@ void main() {
       });
 
       test('should include additional parameters', () {
-        final url = UrlBuilder.buildAuthorizationUrl(
+        final url = UrlBuilder.buildAuthorizationUrlStatic(
           baseUrl: 'https://test.frappe.cloud',
           clientId: 'test_client',
           redirectUri: 'myapp://oauth2redirect',
@@ -65,9 +136,9 @@ void main() {
       });
     });
 
-    group('buildTokenUrl', () {
+    group('static buildTokenUrlStatic', () {
       test('should build default token URL', () {
-        final url = UrlBuilder.buildTokenUrl(
+        final url = UrlBuilder.buildTokenUrlStatic(
           baseUrl: 'https://test.frappe.cloud',
         );
         expect(
@@ -79,7 +150,7 @@ void main() {
       });
 
       test('should use custom endpoint when provided', () {
-        final url = UrlBuilder.buildTokenUrl(
+        final url = UrlBuilder.buildTokenUrlStatic(
           baseUrl: 'https://test.frappe.cloud',
           customEndpoint: 'https://custom.token.endpoint',
         );
@@ -87,9 +158,9 @@ void main() {
       });
     });
 
-    group('buildUserInfoUrl', () {
+    group('static buildUserInfoUrlStatic', () {
       test('should build default user info URL', () {
-        final url = UrlBuilder.buildUserInfoUrl(
+        final url = UrlBuilder.buildUserInfoUrlStatic(
           baseUrl: 'https://test.frappe.cloud',
         );
         expect(
@@ -101,7 +172,7 @@ void main() {
       });
 
       test('should use custom endpoint when provided', () {
-        final url = UrlBuilder.buildUserInfoUrl(
+        final url = UrlBuilder.buildUserInfoUrlStatic(
           baseUrl: 'https://test.frappe.cloud',
           customEndpoint: 'https://custom.userinfo.endpoint',
         );

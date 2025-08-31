@@ -3,7 +3,7 @@ import '../exceptions/frappe_auth_exception.dart';
 import '../models/oauth_config.dart';
 
 /// Simple web authentication service that wraps flutter_web_auth_2
-/// 
+///
 /// Provides a clean interface for OAuth2 web authentication flows
 /// without exposing platform-specific complexities.
 class WebAuthService {
@@ -12,7 +12,7 @@ class WebAuthService {
   const WebAuthService({required this.config});
 
   /// Performs OAuth2 authentication using the system browser
-  /// 
+  ///
   /// Returns the authorization code from the callback URL.
   /// Throws [FrappeAuthException] for various error scenarios.
   Future<String> authenticate({
@@ -29,9 +29,8 @@ class WebAuthService {
       // Extract authorization code from callback URL
       final code = _extractAuthorizationCode(result);
       if (code == null) {
-        throw FrappeAuthException(
+        throw FrappeNetworkException(
           'No authorization code found in callback URL',
-          code: 'MISSING_AUTH_CODE',
         );
       }
 
@@ -40,24 +39,21 @@ class WebAuthService {
       if (e is FrappeAuthException) {
         rethrow;
       }
-      
+
       // Handle flutter_web_auth_2 specific errors
       if (e.toString().contains('User cancelled')) {
         throw FrappeUserCancelledException(
           'User cancelled the authentication process',
         );
       }
-      
+
       if (e.toString().contains('RESULT_CANCELED')) {
-        throw FrappeUserCancelledException(
-          'Authentication was cancelled',
-        );
+        throw FrappeUserCancelledException('Authentication was cancelled');
       }
-      
+
       // Generic authentication error
-      throw FrappeAuthException(
+      throw FrappeNetworkException(
         'Authentication failed: ${e.toString()}',
-        code: 'AUTH_FAILED',
         originalError: e,
       );
     }
@@ -77,32 +73,29 @@ class WebAuthService {
   String? _extractAuthorizationCode(String callbackUrl) {
     try {
       final uri = Uri.parse(callbackUrl);
-      
+
       // Check for authorization code in query parameters
       final code = uri.queryParameters['code'];
       if (code != null && code.isNotEmpty) {
         return code;
       }
-      
+
       // Check for error in callback
       final error = uri.queryParameters['error'];
       if (error != null) {
-        final errorDescription = uri.queryParameters['error_description'] ?? error;
-        throw FrappeAuthException(
-          'OAuth error: $errorDescription',
-          code: 'OAUTH_ERROR',
-        );
+        final errorDescription =
+            uri.queryParameters['error_description'] ?? error;
+        throw FrappeNetworkException('OAuth error: $errorDescription');
       }
-      
+
       return null;
     } catch (e) {
       if (e is FrappeAuthException) {
         rethrow;
       }
-      
-      throw FrappeAuthException(
+
+      throw FrappeNetworkException(
         'Failed to parse callback URL: ${e.toString()}',
-        code: 'CALLBACK_PARSE_ERROR',
         originalError: e,
       );
     }
@@ -126,6 +119,5 @@ class WebAuthService {
 
 /// Exception thrown when user cancels the authentication process
 class FrappeUserCancelledException extends FrappeAuthException {
-  FrappeUserCancelledException(String message)
-      : super(message, code: 'USER_CANCELLED');
+  FrappeUserCancelledException(super.message) : super(code: 'USER_CANCELLED');
 }

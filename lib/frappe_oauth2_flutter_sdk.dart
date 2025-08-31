@@ -1,7 +1,7 @@
 library;
 
 // Core client
-export 'frappe_oauth_client_simple.dart' hide FrappeConfigurationException;
+export 'frappe_oauth_client_simple.dart';
 
 // Models
 export 'models/auth_result.dart';
