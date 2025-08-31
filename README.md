@@ -95,10 +95,10 @@ Add to `ios/Runner/Info.plist`:
 
 ## 📚 Documentation
 
-- **[Quick Start Guide](docs/quick_start.md)** - Get up and running in 10 minutes
-- **[API Reference](docs/api_reference.md)** - Complete API documentation
-- **[Platform Setup](docs/platform_setup.md)** - Detailed platform configuration
-- **[Best Practices](docs/best_practices.md)** - Security and architecture patterns
+- **[Quick Start Guide](doc/quick_start.md)** - Get up and running in 10 minutes
+- **[API Reference](doc/api_reference.md)** - Complete API documentation
+- **[Platform Setup](doc/platform_setup.md)** - Detailed platform configuration
+- **[Best Practices](doc/best_practices.md)** - Security and architecture patterns
 
 ## 🧪 Testing
 

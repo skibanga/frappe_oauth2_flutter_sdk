@@ -1,15 +1,13 @@
 import 'dart:convert';
 import 'dart:math';
 import 'package:crypto/crypto.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
 import 'exceptions/frappe_auth_exception.dart';
 import 'models/auth_result.dart';
 import 'models/oauth_config.dart';
 import 'models/token_response.dart';
 import 'models/user_info.dart';
 import 'services/network_service.dart';
-import 'services/web_auth_service.dart';
-import 'utils/url_builder.dart';
 
 /// Main client for Frappe OAuth2 authentication
 ///
@@ -110,7 +108,7 @@ class FrappeOAuthClient {
   Future<void> logout() async {
     _currentTokens = null;
     _currentUser = null;
-    // TODO: In Phase 2, we'll add storage clearing here
+    // Storage clearing is handled by the simplified client
   }
 
   /// Checks if the user is currently authenticated

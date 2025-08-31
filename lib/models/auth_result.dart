@@ -3,7 +3,7 @@ import 'package:frappe_oauth2_flutter_sdk/models/token_response.dart';
 import 'package:frappe_oauth2_flutter_sdk/models/user_info.dart';
 
 /// Represents the result of an authentication operation
-/// 
+///
 /// Contains either successful authentication data (tokens and user info)
 /// or error information if the authentication failed.
 class AuthResult {
@@ -19,6 +19,9 @@ class AuthResult {
   /// Error information (only available on failure)
   final FrappeAuthException? error;
 
+  /// Whether the user cancelled the authentication
+  final bool cancelled;
+
   /// Additional metadata about the authentication process
   final Map<String, dynamic> metadata;
 
@@ -27,8 +30,14 @@ class AuthResult {
     this.userInfo,
     this.tokens,
     this.error,
+    this.cancelled = false,
     this.metadata = const {},
   });
+
+  /// Helper getters for easier result checking
+  bool get isSuccess => success;
+  bool get isFailure => !success && !cancelled;
+  bool get isCancelled => cancelled;
 
   /// Creates a successful authentication result
   factory AuthResult.success({
@@ -49,11 +58,7 @@ class AuthResult {
     required FrappeAuthException error,
     Map<String, dynamic> metadata = const {},
   }) {
-    return AuthResult._(
-      success: false,
-      error: error,
-      metadata: metadata,
-    );
+    return AuthResult._(success: false, error: error, metadata: metadata);
   }
 
   /// Creates a cancelled authentication result (user cancelled the flow)
@@ -63,16 +68,14 @@ class AuthResult {
   }) {
     return AuthResult._(
       success: false,
+      cancelled: true,
       error: FrappeUserCancelledException(message),
       metadata: metadata,
     );
   }
 
-  /// Whether the authentication failed
-  bool get isFailure => !success;
-
-  /// Whether the authentication was cancelled by the user
-  bool get isCancelled => error is FrappeUserCancelledException;
+  /// Whether the authentication was cancelled by the user (legacy method)
+  bool get wasCancelled => error is FrappeUserCancelledException;
 
   /// Whether the authentication failed due to a network error
   bool get isNetworkError => error is FrappeNetworkException;
@@ -92,28 +95,30 @@ class AuthResult {
   /// Gets a user-friendly error message
   String get friendlyErrorMessage {
     if (success) return 'Authentication successful';
-    
+
     if (isCancelled) {
       return 'Authentication was cancelled';
     }
-    
+
     if (isNetworkError) {
       return 'Network error occurred. Please check your connection and try again.';
     }
-    
+
     if (isTokenError) {
       return 'Authentication failed. Please try logging in again.';
     }
-    
+
     if (isConfigurationError) {
       return 'Configuration error. Please contact support.';
     }
-    
+
     return error?.message ?? 'An unknown error occurred';
   }
 
   /// Executes a callback if authentication was successful
-  T? onSuccess<T>(T Function(UserInfo userInfo, TokenResponse tokens) callback) {
+  T? onSuccess<T>(
+    T Function(UserInfo userInfo, TokenResponse tokens) callback,
+  ) {
     if (success && userInfo != null && tokens != null) {
       return callback(userInfo!, tokens!);
     }
@@ -143,9 +148,7 @@ class AuthResult {
   }
 
   /// Creates a copy of this AuthResult with updated metadata
-  AuthResult copyWith({
-    Map<String, dynamic>? metadata,
-  }) {
+  AuthResult copyWith({Map<String, dynamic>? metadata}) {
     if (success) {
       return AuthResult.success(
         userInfo: userInfo!,

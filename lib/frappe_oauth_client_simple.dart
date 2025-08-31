@@ -8,7 +8,7 @@ import 'models/oauth_config.dart';
 import 'models/token_response.dart';
 import 'models/user_info.dart';
 import 'services/network_service.dart';
-import 'services/web_auth_service.dart' hide FrappeUserCancelledException;
+import 'services/web_auth_service.dart';
 import 'utils/url_builder.dart';
 
 /// Simplified main client for Frappe OAuth2 authentication

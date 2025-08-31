@@ -117,7 +117,4 @@ class WebAuthService {
   }
 }
 
-/// Exception thrown when user cancels the authentication process
-class FrappeUserCancelledException extends FrappeAuthException {
-  FrappeUserCancelledException(super.message) : super(code: 'USER_CANCELLED');
-}
+// FrappeUserCancelledException is defined in exceptions/frappe_auth_exception.dart
