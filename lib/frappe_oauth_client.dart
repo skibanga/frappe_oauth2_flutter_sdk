@@ -1,16 +1,18 @@
 import 'dart:convert';
 import 'dart:math';
 import 'package:crypto/crypto.dart';
-import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
-import 'package:frappe_oauth2_flutter_sdk/exceptions/frappe_auth_exception.dart';
-import 'package:frappe_oauth2_flutter_sdk/models/auth_result.dart';
-import 'package:frappe_oauth2_flutter_sdk/models/oauth_config.dart';
-import 'package:frappe_oauth2_flutter_sdk/models/token_response.dart';
-import 'package:frappe_oauth2_flutter_sdk/models/user_info.dart';
-import 'package:frappe_oauth2_flutter_sdk/services/network_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'exceptions/frappe_auth_exception.dart';
+import 'models/auth_result.dart';
+import 'models/oauth_config.dart';
+import 'models/token_response.dart';
+import 'models/user_info.dart';
+import 'services/network_service.dart';
+import 'services/web_auth_service.dart';
+import 'utils/url_builder.dart';
 
 /// Main client for Frappe OAuth2 authentication
-/// 
+///
 /// Provides a complete OAuth2 authentication flow including:
 /// - Authorization code flow with PKCE
 /// - Token exchange and refresh
@@ -24,10 +26,8 @@ class FrappeOAuthClient {
   TokenResponse? _currentTokens;
   UserInfo? _currentUser;
 
-  FrappeOAuthClient({
-    required this.config,
-    NetworkService? networkService,
-  }) : _networkService = networkService ?? NetworkService(config: config) {
+  FrappeOAuthClient({required this.config, NetworkService? networkService})
+    : _networkService = networkService ?? NetworkService(config: config) {
     // Validate configuration on initialization
     final issues = config.validate();
     if (issues.isNotEmpty) {
@@ -40,7 +40,7 @@ class FrappeOAuthClient {
   }
 
   /// Initiates the OAuth2 login flow
-  /// 
+  ///
   /// Returns an [AuthResult] containing either successful authentication
   /// data or error information.
   Future<AuthResult> login() async {
@@ -105,7 +105,7 @@ class FrappeOAuthClient {
   }
 
   /// Logs out the current user
-  /// 
+  ///
   /// Clears all stored authentication data and tokens.
   Future<void> logout() async {
     _currentTokens = null;
@@ -114,28 +114,28 @@ class FrappeOAuthClient {
   }
 
   /// Checks if the user is currently authenticated
-  /// 
+  ///
   /// Returns true if there are valid, non-expired tokens.
   bool isAuthenticated() {
     return _currentTokens != null && _currentTokens!.isValid;
   }
 
   /// Gets the current user information
-  /// 
+  ///
   /// Returns null if not authenticated.
   UserInfo? getCurrentUser() {
     return isAuthenticated() ? _currentUser : null;
   }
 
   /// Gets the current access token
-  /// 
+  ///
   /// Returns null if not authenticated or token is expired.
   String? getAccessToken() {
     return isAuthenticated() ? _currentTokens!.accessToken : null;
   }
 
   /// Refreshes the current access token using the refresh token
-  /// 
+  ///
   /// Returns the new token response or throws an exception if refresh fails.
   Future<TokenResponse> refreshToken() async {
     if (_currentTokens == null) {
@@ -282,9 +282,7 @@ class FrappeOAuthClient {
     try {
       final response = await _networkService.get(
         config.userInfoEndpoint,
-        headers: {
-          'Authorization': 'Bearer $accessToken',
-        },
+        headers: {'Authorization': 'Bearer $accessToken'},
       );
 
       return UserInfo.fromJson(response);

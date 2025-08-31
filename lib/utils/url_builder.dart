@@ -1,9 +1,51 @@
+import 'dart:math';
 import 'package:frappe_oauth2_flutter_sdk/exceptions/frappe_auth_exception.dart';
+import '../models/oauth_config.dart';
 
-/// Utility class for building and validating OAuth2 URLs
+/// Simplified utility class for building OAuth2 URLs
 class UrlBuilder {
-  /// Builds a complete OAuth2 authorization URL with all required parameters
-  static String buildAuthorizationUrl({
+  final OAuthConfig config;
+
+  const UrlBuilder({required this.config});
+
+  /// Builds the OAuth2 authorization URL for this configuration
+  String buildAuthorizationUrl({String? state}) {
+    final redirectUri = '${config.redirectScheme}://oauth2redirect';
+    final generatedState = state ?? _generateState();
+
+    return buildAuthorizationUrlStatic(
+      baseUrl: config.baseUrl,
+      clientId: config.clientId,
+      redirectUri: redirectUri,
+      scope: config.scopes.join(' '),
+      codeChallenge: '', // We'll add PKCE later if needed
+      state: generatedState,
+    );
+  }
+
+  /// Builds the token exchange URL
+  String buildTokenUrl() {
+    return '${config.baseUrl}/api/method/frappe.integrations.oauth2.get_token';
+  }
+
+  /// Builds the user info URL
+  String buildUserInfoUrl() {
+    return '${config.baseUrl}/api/method/frappe.integrations.oauth2.openid_profile';
+  }
+
+  /// Generates a random state parameter
+  String _generateState() {
+    const chars =
+        'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    final random = Random.secure();
+    return List.generate(
+      32,
+      (index) => chars[random.nextInt(chars.length)],
+    ).join();
+  }
+
+  /// Static method - builds a complete OAuth2 authorization URL with all required parameters
+  static String buildAuthorizationUrlStatic({
     required String baseUrl,
     required String clientId,
     required String redirectUri,
